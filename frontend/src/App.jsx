@@ -7,7 +7,7 @@ import Register from "./pages/register";
 import MarketPlace from "./pages/marketplace";
 import Dashboard from "./pages/dashboard";
 import Cart from "./pages/cart";
-
+import './index.css';
 function App() {
   return (
     <BrowserRouter>
