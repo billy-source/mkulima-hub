@@ -2,14 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
 import { useNavigate } from "react-router-dom";
-
+import farmersVideo from "../assets/farmers.mp4";
 function HomePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // This function will fetch a list of products from your API
     const fetchProducts = async () => {
       try {
         const res = await api.get("/api/products/");
@@ -20,55 +19,51 @@ function HomePage() {
         setLoading(false);
       }
     };
-    
-    // Check for a token. If no token, maybe redirect or show a login message.
-    const token = localStorage.getItem(ACCESS_TOKEN);
-    if (!token) {
-      // You can handle this by redirecting to a login page,
-      // but the ProtectedRoute already handles this for us.
-      // For this component, we'll just show an empty state.
-      setLoading(false);
-      return;
-    }
 
     fetchProducts();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem(ACCESS_TOKEN);
-    localStorage.removeItem("REFRESH_TOKEN"); // assuming you also store a refresh token
-    navigate("/login");
-  };
 
   if (loading) {
-    return <div>Loading products...</div>;
+    return <div>Loading...</div>;
   }
   
-  // This is a simple placeholder for the UI
   return (
-    <div style={{ padding: "20px" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ccc", paddingBottom: "10px", marginBottom: "20px" }}>
-        <h1>MkulimaHub</h1>
-        <button onClick={handleLogout} style={{ padding: "10px 20px", cursor: "pointer" }}>
-          Logout
+    <div style={{ padding: "0" }}>
+      {/* --- Hero Section with Video --- */}
+      <section style={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "center", 
+        padding: "50px 20px", 
+        textAlign: "center", 
+        backgroundColor: "#eaf5e9"
+      }}>
+        <h2>Connecting Farmers Directly to You</h2>
+        <p style={{ maxWidth: "600px", margin: "10px 0 30px" }}>
+          MkulimaHub bridges the gap between local farmers and urban buyers, ensuring fresh produce and fair prices for all.
+        </p>
+        <button onClick={() => navigate('/MarketPlace')} style={{ 
+          padding: "15px 30px", 
+          fontSize: "1.2em", 
+          cursor: "pointer", 
+          backgroundColor: "#4CAF50", 
+          color: "white", 
+          border: "none", 
+          borderRadius: "5px" 
+        }}>
+          Explore Products
         </button>
-      </header>
-
-      <h2>Available Produce</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "20px" }}>
-        {products.length > 0 ? (
-          products.map(product => (
-            <div key={product.id} style={{ border: "1px solid #eee", borderRadius: "8px", padding: "15px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
-              <h3>{product.name}</h3>
-              <p>by {product.farmer_name}</p>
-              <p>KSh {product.price}</p>
-              <p>{product.quantity} available</p>
-            </div>
-          ))
-        ) : (
-          <div>No products available yet.</div>
-        )}
-      </div>
+       <div style={{ marginTop: "40px", width: "100%", maxWidth: "800px" }}>
+          <video
+            src={farmersVideo} 
+            autoPlay
+            loop
+            muted
+            style={{ width: "100%", height: "auto", borderRadius: "8px" }}
+          />
+        </div>
+      </section>
     </div>
   );
 }

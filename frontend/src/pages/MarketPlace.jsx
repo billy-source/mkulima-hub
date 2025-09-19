@@ -55,13 +55,6 @@ function Marketplace() {
 
   return (
     <div className="container" style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", paddingBottom: "20px", marginBottom: "30px" }}>
-        <h1 style={{ color: "#2E8B57" }}>MkulimaHub Marketplace</h1>
-        <button onClick={() => navigate("/dashboard")} style={{ padding: "10px 20px", cursor: "pointer", backgroundColor: "#36a2eb", color: "white", border: "none", borderRadius: "5px" }}>
-          Go to Dashboard
-        </button>
-      </header>
-
       <main>
         <div style={{ display: "flex", gap: "20px", marginBottom: "20px", alignItems: "center" }}>
           <input
