@@ -42,7 +42,8 @@ cloudinary.config(
 )
 
 # CORRECTED: This line now correctly gets the value from the .env file and splits it into a list.
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOST', '127.0.0.1').split(',')
  
 REST_FRAMEWORK = { 
     "DEFAULT_AUTHENTICATION_CLASSES": ( 
