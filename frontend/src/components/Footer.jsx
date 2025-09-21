@@ -48,7 +48,7 @@ const styles = {
   footer: {
     backgroundColor: '#1E40AF',
     color: '#fff',
-    padding: '40px 20px',
+    padding: '20px 10px', 
     fontFamily: 'Arial, sans-serif',
     textAlign: 'center',
   },
@@ -60,20 +60,20 @@ const styles = {
     margin: '0 auto',
   },
   section: {
-    margin: '20px',
+    margin: '10px',
     flex: '1',
-    minWidth: '200px',
+    minWidth: '180px', 
   },
   heading: {
-    fontSize: '1.2rem',
-    marginBottom: '10px',
+    fontSize: '1rem', 
+    marginBottom: '8px', 
     borderBottom: '2px solid #fff',
     paddingBottom: '5px',
     display: 'inline-block',
   },
   text: {
-    fontSize: '0.9rem',
-    lineHeight: '1.5',
+    fontSize: '0.8rem', 
+    lineHeight: '1.4', 
   },
   list: {
     listStyle: 'none',
@@ -82,24 +82,24 @@ const styles = {
   link: {
     color: '#fff',
     textDecoration: 'none',
-    fontSize: '0.9rem',
+    fontSize: '0.8rem', 
     transition: 'color 0.3s ease',
   },
   socialIcons: {
     display: 'flex',
     justifyContent: 'center',
-    gap: '15px',
+    gap: '10px', 
   },
   socialLink: {
     color: '#fff',
-    fontSize: '1.5rem',
+    fontSize: '1.2rem', 
     transition: 'color 0.3s ease',
   },
   bottomBar: {
-    marginTop: '20px',
-    paddingTop: '10px',
+    marginTop: '10px',
+    paddingTop: '5px',
     borderTop: '1px solid #4B5563',
-    fontSize: '0.8rem',
+    fontSize: '0.7rem', 
   },
 };
 

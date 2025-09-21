@@ -70,7 +70,7 @@ function Cart() {
       <header style={{ borderBottom: "1px solid #ddd", paddingBottom: "20px", marginBottom: "30px" }}>
         <h1 style={{ color: "#2E8B57" }}>Your Shopping Cart</h1>
       </header>
-      
+       
       <main>
         {cartItems.length === 0 ? (
           <div style={{ textAlign: "center", color: "#888" }}>
