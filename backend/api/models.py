@@ -6,7 +6,6 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="buyer")
     phone = models.CharField(max_length=15, unique=True)
 
-    # Avoid clashes with default Django relations
     groups = models.ManyToManyField(
         "auth.Group",
         related_name="custom_user_groups",
@@ -39,7 +38,7 @@ class Product(models.Model):
 
 class Order(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.CASCADE)
-    products = models.ManyToManyField(Product, through="OrderItem")
+    products = models.ManyToManyField('Product', through="OrderItem")
     total = models.PositiveIntegerField()
     status = models.CharField(max_length=20, default="pending")
 
