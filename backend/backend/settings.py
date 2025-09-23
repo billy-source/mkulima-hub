@@ -9,6 +9,7 @@ import cloudinary.api
 
 # Load environment variables from .env file
 load_dotenv()
+AUTH_USER_MODEL = "api.User"
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+     "corsheaders.middleware.CorsMiddleware",
 ]
 
 # URLs & Templates
