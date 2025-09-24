@@ -1,11 +1,13 @@
 from rest_framework import generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import Farmer, Product, Order, OrderItem, Payment, Delivery, Review
 from .serializers import (
     UserSerializer, FarmerSerializer, ProductSerializer,
     OrderSerializer, PaymentSerializer, DeliverySerializer, ReviewSerializer
 )
+
+User = get_user_model()
 
 # User Registration
 class RegisterView(generics.CreateAPIView):

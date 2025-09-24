@@ -1,0 +1,333 @@
+{
+  "info": {
+    "name": "Mkulima Hub API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection to test Mkulima Hub backend APIs (register, login, farmers, products, orders, payments, deliveries, reviews)."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"0712345678\",\n  \"role\": \"buyer\",\n  \"password\": \"testpass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user/register/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user", "register", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login / Get Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"testpass123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/token/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "token", ""]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login response code is 200 or 201', function(){pm.expect(pm.response.code).to.be.oneOf([200,201]);});",
+              "var json = {};\ntry { json = pm.response.json(); } catch(e) { json = {}; }",
+              "// If JWT response contains access/refresh, store access into collection variable",
+              "if(json.access){ pm.collectionVariables.set('accessToken', json.access); }",
+              "// If TokenAuth returns 'token', store it as well",
+              "if(json.token){ pm.collectionVariables.set('accessToken', json.token); }",
+              "console.log('Saved collection variable accessToken =', pm.collectionVariables.get('accessToken'));"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Refresh Token (JWT)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"<paste_refresh_token_here>\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/token/refresh/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "token", "refresh", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Farmers",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/farmers/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "farmers", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Farmer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user\": 1,\n  \"farm_name\": \"Sunny Farm\",\n  \"location\": \"Nairobi\",\n  \"verified\": false\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/farmers/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "farmers", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Farmer (by id)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/farmers/1/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "farmers", "1", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Products",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/products/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "products", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"farmer\": 1,\n  \"name\": \"Maize\",\n  \"price\": 120,\n  \"stock\": 100\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/products/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "products", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product (by id)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/products/1/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "products", "1", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Orders",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/orders/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Order (basic)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"buyer\": 1,\n  \"total\": 120,\n  \"status\": \"pending\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/orders/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "orders", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Payments",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/payments/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "payments", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order\": 1,\n  \"checkout_id\": \"CHK123\",\n  \"status\": \"pending\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/payments/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "payments", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Deliveries",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/deliveries/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "deliveries", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Delivery",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"order\": 1,\n  \"status\": \"preparing\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/deliveries/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "deliveries", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Reviews",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "{{base_url}}/api/reviews/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reviews", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Review",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product\": 1,\n  \"buyer\": 1,\n  \"rating\": 5,\n  \"comment\": \"Excellent product\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/reviews/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "reviews", ""]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -6,25 +6,14 @@ class User(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="buyer")
     phone = models.CharField(max_length=15, unique=True)
 
-    groups = models.ManyToManyField(
-        "auth.Group",
-        related_name="custom_user_groups",
-        blank=True
-    )
-    user_permissions = models.ManyToManyField(
-        "auth.Permission",
-        related_name="custom_user_permissions",
-        blank=True
-    )
+    groups = models.ManyToManyField("auth.Group", related_name="custom_user_groups", blank=True)
+    user_permissions = models.ManyToManyField("auth.Permission", related_name="custom_user_permissions", blank=True)
 
 class Farmer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     farm_name = models.CharField(max_length=100)
     location = models.CharField(max_length=100)
     verified = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.farm_name
 
 class Product(models.Model):
     farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
@@ -33,12 +22,9 @@ class Product(models.Model):
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to="products", blank=True, null=True)
 
-    def __str__(self):
-        return self.name
-
 class Order(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.CASCADE)
-    products = models.ManyToManyField('Product', through="OrderItem")
+    products = models.ManyToManyField(Product, through="OrderItem")
     total = models.PositiveIntegerField()
     status = models.CharField(max_length=20, default="pending")
 
