@@ -4,7 +4,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -16,15 +16,17 @@ function Dashboard() {
         return;
       }
       try {
-        let endpoint = '';
+        let endpoint = "";
         if (user.role === "farmer") {
           endpoint = "/api/farmer/my-products/";
         } else if (user.role === "customer") {
           endpoint = "/api/customer/my-orders/";
         }
 
-        const res = await api.get(endpoint);
-        setData(res.data);
+        if (endpoint) {
+          const res = await api.get(endpoint);
+          setData(res.data);
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
@@ -36,30 +38,36 @@ function Dashboard() {
   }, [user]);
 
   const handleAddNew = () => {
-    if (user.role === "farmer") {
+    if (user?.role === "farmer") {
       navigate("/add-product");
     }
   };
 
   const renderFarmerDashboard = () => (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h3 style={{ margin: "0" }}>Your Listings</h3>
-        <button onClick={handleAddNew} style={{ padding: "10px 15px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+      <div className="flex justify-between items-center mb-5">
+        <h3 className="text-xl font-semibold">Your Listings</h3>
+        <button
+          onClick={handleAddNew}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+        >
           + Add New Product
         </button>
       </div>
       {data.length === 0 ? (
-        <div style={{ textAlign: "center", color: "#888", padding: "50px" }}>
+        <div className="text-center text-gray-500 py-12">
           <p>You have not listed any products yet.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "25px" }}>
-          {data.map(product => (
-            <div key={product.id} style={{ border: "1px solid #eee", borderRadius: "10px", padding: "20px", boxShadow: "0 4px 10px rgba(0,0,0,0.05)" }}>
-              <h4 style={{ margin: "0 0 10px 0", color: "#333" }}>{product.name}</h4>
-              <p style={{ margin: "0", color: "#666" }}>*Price:* Ksh {product.price}</p>
-              <p style={{ margin: "5px 0 0", color: "#666" }}>*Quantity:* {product.quantity} available</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {data.map((product) => (
+            <div
+              key={product.id}
+              className="border rounded-lg p-4 shadow hover:shadow-lg transition"
+            >
+              <h4 className="text-lg font-bold text-gray-800">{product.name}</h4>
+              <p className="text-gray-600">Price: Ksh {product.price}</p>
+              <p className="text-gray-600">Quantity: {product.quantity}</p>
             </div>
           ))}
         </div>
@@ -69,19 +77,25 @@ function Dashboard() {
 
   const renderCustomerDashboard = () => (
     <>
-      <h3 style={{ marginBottom: "20px" }}>Your Order History</h3>
+      <h3 className="text-xl font-semibold mb-5">Your Order History</h3>
       {data.length === 0 ? (
-        <div style={{ textAlign: "center", color: "#888", padding: "50px" }}>
+        <div className="text-center text-gray-500 py-12">
           <p>You have no past orders. Explore the homepage to start shopping!</p>
-          <button onClick={() => navigate("/")} style={{ marginTop: "20px", padding: "10px 20px", backgroundColor: "#2E8B57", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-5 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+          >
             Start Shopping
           </button>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          {data.map(order => (
-            <div key={order.id} style={{ border: "1px solid #eee", borderRadius: "8px", padding: "15px", boxShadow: "0 2px 5px rgba(0,0,0,0.05)" }}>
-              <p style={{ fontWeight: "bold", color: "#2E8B57" }}>Order ID: #{order.id}</p>
+        <div className="space-y-4">
+          {data.map((order) => (
+            <div
+              key={order.id}
+              className="border rounded-lg p-4 shadow hover:shadow-md transition"
+            >
+              <p className="font-bold text-green-700">Order ID: #{order.id}</p>
               <p>Total: Ksh {order.total_price}</p>
               <p>Status: {order.status}</p>
             </div>
@@ -93,25 +107,21 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="container" style={{ textAlign: "center", padding: "50px" }}>
+      <div className="text-center py-12">
         <h2>Loading your dashboard...</h2>
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ fontFamily: "sans-serif", padding: "20px" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #ddd", paddingBottom: "20px", marginBottom: "30px" }}>
-        <h1 style={{ color: "#2E8B57" }}>Dashboard</h1>
-        <button onClick={logout} style={{ padding: "10px 20px", cursor: "pointer", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "5px" }}>
-          Logout
-        </button>
-      </header>
+    <div className="container mx-auto px-6 py-10">
       <main>
-        <h2 style={{ marginBottom: "20px" }}>
-          Welcome, {user?.username}! 
-        </h2>
-        {user?.role === "farmer" ? renderFarmerDashboard() : renderCustomerDashboard()}
+        <h2 className="text-2xl font-semibold mb-6">
+  Welcome, {user?.username || "User"}!
+</h2>
+        {user?.role === "farmer"
+          ? renderFarmerDashboard()
+          : renderCustomerDashboard()}
       </main>
     </div>
   );

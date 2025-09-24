@@ -63,7 +63,7 @@ function HomePage() {
 
   return (
     <div>
-      {/* --- Hero Section with Video Background --- */}
+   
       <section style={heroContainerStyle}>
         <video src={farmersVideo} autoPlay loop muted playsInline style={videoStyle}></video>
         
@@ -78,59 +78,59 @@ function HomePage() {
         </div>
       </section>
       <section className="bg-green-50 py-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">Why Mkulima Hub?</h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              "Farmer-friendly Registration",
-              "Seamless M-Pesa Integration",
-              "Reliable Order Management",
-              "Insights & Dashboards",
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
-              >
-                <p className="font-semibold text-lg">{feature}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="py-20 max-w-7xl mx-auto px-6 text-center">
-        <h2 className="text-3xl font-bold mb-12">Our Impact</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { title: "💰 Higher Earnings", desc: "Farmers get fair prices." },
-            { title: "🥬 Fresher Produce", desc: "Buyers enjoy healthy food." },
-            { title: "🌍 Local Growth", desc: "Boost the community economy." },
-          ].map((impact, index) => (
-            <div
-              key={index}
-              className="bg-green-100 rounded-2xl p-8 shadow-md hover:shadow-lg transition"
-            >
-              <h3 className="text-xl font-bold mb-2">{impact.title}</h3>
-              <p>{impact.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-      <section className="bg-green-600 text-white py-20 text-center">
-        <h2 className="text-4xl font-bold mb-6">
-          Join Mkulima Hub Today
-        </h2>
-        <p className="mb-8 text-lg">
-          Grow more, earn more, live better.
-        </p>
-        <a
-          href="/register"
-          className="px-8 py-4 bg-blue-400 text-gray-900 font-semibold rounded-lg shadow-md hover:bg-blue-500 transition"
+  <div className="max-w-7xl mx-auto text-center">
+    <h2 className="text-3xl font-bold mb-12">Why Mkulima Hub?</h2>
+    <div className="grid md:grid-cols-4 gap-8">
+      {[
+        "Farmer-friendly Registration",
+        "Seamless M-Pesa Integration",
+        "Reliable Order Management",
+        "Insights & Dashboards",
+      ].map((feature, index) => (
+        <div
+          key={index}
+          className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2"
         >
-          Register Now
-        </a>
-      </section>
-      {/* --- Rest of your page content (e.g., product sections, etc.) goes here --- */}
-      {/* Note: I've removed the products section from here, as it belongs to the Marketplace page as per your previous code. */}
+          <p className="font-semibold text-lg text-gray-800">{feature}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section className="bg-green-50 py-20 px-6">
+  <div className="max-w-7xl mx-auto text-center">
+    <h2 className="text-3xl font-bold mb-12">Our Impact</h2>
+    <div className="grid md:grid-cols-3 gap-8">
+      {[
+        { title: "💰 Higher Earnings", desc: "Farmers get fair prices." },
+        { title: "🥬 Fresher Produce", desc: "Buyers enjoy healthy food." },
+        { title: "🌍 Local Growth", desc: "Boost the community economy." },
+      ].map((impact, index) => (
+        <div
+          key={index}
+          className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-2"
+        >
+          <h3 className="text-xl font-bold mb-3 text-green-700">{impact.title}</h3>
+          <p className="text-gray-700">{impact.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section className="bg-green-600 text-white py-20 text-center">
+  <div className="max-w-3xl mx-auto">
+    <h2 className="text-4xl font-bold mb-6">Join Mkulima Hub Today</h2>
+    <p className="mb-8 text-lg">Grow more, earn more, live better.</p>
+    <a
+      href="/register"
+      className="px-8 py-4 bg-white text-green-700 font-semibold rounded-lg shadow-lg hover:bg-gray-100 transition transform hover:-translate-y-1"
+    >
+      Register Now
+    </a>
+  </div>
+</section>
     </div>
   );
 }
