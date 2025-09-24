@@ -73,11 +73,11 @@ const About = () => {
           Our team is a blend of agricultural experts and tech innovators, all working together to make MkulimaHub a success.
         </p>
         <div style={teamMemberStyle}>
-          <img src="https://via.placeholder.com/120" alt="Team Member" style={teamImageStyle} />
+          <img src="https://i.postimg.cc/5tCDYCHF/bill.jpg" alt="Team Member" style={teamImageStyle} />
           <div>
-            <h3>Jane Doe</h3>
+            <h3>Billy Kemboi</h3>
             <p><strong>Co-founder & CEO</strong></p>
-            <p>Jane is a passionate advocate for sustainable farming and has a background in agricultural economics.</p>
+            <p>Billy is a passionate advocate for sustainable farming and has a background in agricultural economics.</p>
           </div>
         </div>
         <div style={teamMemberStyle}>

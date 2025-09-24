@@ -112,7 +112,7 @@ function Register() {
                     className="w-full p-3 mb-4 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                 >
                     <option value='buyer'>Buyer</option>
-                    <option value="Farmer">Farmer</option>
+                    <option value="farmer">Farmer</option>
                 </select>
                 <button
                     className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
