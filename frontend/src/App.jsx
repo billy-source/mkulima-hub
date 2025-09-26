@@ -6,12 +6,13 @@ import HomePage from "./pages/Homepage";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import MarketPlace from "./pages/MarketPlace";
-import Dashboard from "./pages/dashboard";
-import Cart from "./pages/cart";
+import Dashboard from "./pages/Dashboard";
+import Cart from "./pages/Cart";
+import OrderConfirmation from "./components/OrderConfirmation";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import About from "./pages/About"; 
-import Contacts from "./pages/Contacts"; 
+import About from "./pages/About";
+import Contacts from "./pages/Contacts";
 import './index.css';
 
 function App() {
@@ -21,7 +22,7 @@ function App() {
         {/* Main container with flexbox for sticky footer */}
         <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
           <Navbar />
-          
+
           {/* Main content area */}
           <main style={{ flexGrow: 1 }}>
             <Routes>
@@ -33,9 +34,10 @@ function App() {
               <Route path="/contacts" element={<Contacts />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/order-confirmation/:orderId" element={<ProtectedRoute><OrderConfirmation /></ProtectedRoute>} />
             </Routes>
           </main>
-          
+
           <Footer />
         </div>
       </AuthProvider>

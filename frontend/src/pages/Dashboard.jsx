@@ -19,13 +19,21 @@ function Dashboard() {
   const [orders, setOrders] = useState([]);
   const [salesTrend, setSalesTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [product, setProduct] = useState({
+    name: "",
+    price: "",
+    description: "",
+    stock: "",
+  });
+
   const navigate = useNavigate();
 
   // Fetch user info
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get("/user/info/", {
+        const res = await api.get("/api/user/info/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
@@ -33,10 +41,10 @@ function Dashboard() {
         console.error("Error fetching user info:", err);
       }
     };
-    fetchUser();
+    if (token) fetchUser();
   }, [token]);
 
-  // Fetch dashboard data when user is loaded
+  // Fetch dashboard data
   useEffect(() => {
     if (!user) return;
 
@@ -55,7 +63,7 @@ function Dashboard() {
         });
         setOrders(ordersRes.data);
 
-        // Sales Trend for Farmers
+        // Sales Trend (only for farmers)
         if (user.role === "farmer") {
           const salesRes = await api.get("/dashboard/sales/trend/", {
             headers: { Authorization: `Bearer ${token}` },
@@ -71,6 +79,22 @@ function Dashboard() {
 
     fetchData();
   }, [user, token]);
+
+  // Handle product form submit
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    try {
+      await api.post("/api/products/", product, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Product added successfully!");
+      setShowProductForm(false);
+      setProduct({ name: "", price: "", description: "", stock: "" });
+    } catch (err) {
+      console.error("Error adding product:", err);
+      alert("Failed to add product");
+    }
+  };
 
   if (loading) return <div className="text-center py-10">Loading Dashboard...</div>;
 
@@ -98,6 +122,64 @@ function Dashboard() {
               <p className="text-2xl">Ksh {data.sales}</p>
             </div>
           </div>
+
+          {/* Add Product Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => setShowProductForm(!showProductForm)}
+              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              {showProductForm ? "Cancel" : "Add New Product"}
+            </button>
+          </div>
+
+          {/* Add Product Form */}
+          {showProductForm && (
+            <form
+              onSubmit={handleAddProduct}
+              className="bg-white p-6 rounded-lg shadow mb-6"
+            >
+              <h3 className="text-lg font-bold mb-4">Add Product</h3>
+              <input
+                type="text"
+                placeholder="Product Name"
+                value={product.name}
+                onChange={(e) => setProduct({ ...product, name: e.target.value })}
+                className="block w-full p-2 border rounded mb-3"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Price"
+                value={product.price}
+                onChange={(e) => setProduct({ ...product, price: e.target.value })}
+                className="block w-full p-2 border rounded mb-3"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Description"
+                value={product.description}
+                onChange={(e) => setProduct({ ...product, description: e.target.value })}
+                className="block w-full p-2 border rounded mb-3"
+                required
+              />
+              <input
+                type="number"
+                placeholder="Stock"
+                value={product.stock}
+                onChange={(e) => setProduct({ ...product, stock: e.target.value })}
+                className="block w-full p-2 border rounded mb-3"
+                required
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Save Product
+              </button>
+            </form>
+          )}
 
           {/* Sales Trend Chart */}
           <div className="bg-white rounded-lg shadow p-6 mb-8">

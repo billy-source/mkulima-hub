@@ -1,106 +1,54 @@
-import React from 'react';
+import React from "react";
+import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer style={styles.footer}>
-      <div style={styles.container}>
-        <div style={styles.section}>
-          <h4 style={styles.heading}>MkulimaHub</h4>
-          <p style={styles.text}>
-            Connecting farmers directly to you for fresh, quality produce.
-          </p>
-        </div>
+    <footer className="bg-blue-900 text-white mt-auto">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-wrap justify-between gap-8 text-center sm:text-left">
+          {/* Brand Section */}
+          <div className="flex-1 min-w-[200px]">
+            <h4 className="text-lg font-bold border-b-2 border-white inline-block pb-1 mb-3">
+              MkulimaHub
+            </h4>
+            <p className="text-sm leading-relaxed">
+              Connecting farmers directly to you for fresh, quality produce.
+            </p>
+          </div>
 
-        <div style={styles.section}>
-          <h4 style={styles.heading}>Quick Links</h4>
-          <ul style={styles.list}>
-            <li><a href="/home" style={styles.link}>Home</a></li>
-            <li><a href="/marketplace" style={styles.link}>Marketplace</a></li>
-            <li><a href="/login" style={styles.link}>Login</a></li>
-            <li><a href="/register" style={styles.link}>Register</a></li>
-          </ul>
-        </div>
+          {/* Quick Links Section */}
+          <div className="flex-1 min-w-[200px]">
+            <h4 className="text-lg font-bold border-b-2 border-white inline-block pb-1 mb-3">
+              Quick Links
+            </h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="/home" className="hover:text-gray-300 transition">Home</a></li>
+              <li><a href="/marketplace" className="hover:text-gray-300 transition">Marketplace</a></li>
+              <li><a href="/login" className="hover:text-gray-300 transition">Login</a></li>
+              <li><a href="/register" className="hover:text-gray-300 transition">Register</a></li>
+            </ul>
+          </div>
 
-        <div style={styles.section}>
-          <h4 style={styles.heading}>Follow Us</h4>
-          <div style={styles.socialIcons}>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-              <i className="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-              <i className="fab fa-twitter"></i>
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" style={styles.socialLink}>
-              <i className="fab fa-instagram"></i>
-            </a>
+          {/* Social Media Section */}
+          <div className="flex-1 min-w-[200px]">
+            <h4 className="text-lg font-bold border-b-2 border-white inline-block pb-1 mb-3">
+              Follow Us
+            </h4>
+            <div className="flex justify-center sm:justify-start gap-4 mt-2">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition text-xl"><FaFacebookF /></a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition text-xl"><FaTwitter /></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 transition text-xl"><FaInstagram /></a>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style={styles.bottomBar}>
-        <p>&copy; {new Date().getFullYear()} MkulimaHub. All rights reserved.</p>
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-600 mt-6 pt-4 text-center text-xs text-gray-300">
+          <p>&copy; {new Date().getFullYear()} MkulimaHub. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
-};
-
-const styles = {
-  footer: {
-    backgroundColor: '#1E40AF',
-    color: '#fff',
-    padding: '20px 10px', 
-    fontFamily: 'Arial, sans-serif',
-    textAlign: 'center',
-  },
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    maxWidth: '1200px',
-    margin: '0 auto',
-  },
-  section: {
-    margin: '10px',
-    flex: '1',
-    minWidth: '180px', 
-  },
-  heading: {
-    fontSize: '1rem', 
-    marginBottom: '8px', 
-    borderBottom: '2px solid #fff',
-    paddingBottom: '5px',
-    display: 'inline-block',
-  },
-  text: {
-    fontSize: '0.8rem', 
-    lineHeight: '1.4', 
-  },
-  list: {
-    listStyle: 'none',
-    padding: '0',
-  },
-  link: {
-    color: '#fff',
-    textDecoration: 'none',
-    fontSize: '0.8rem', 
-    transition: 'color 0.3s ease',
-  },
-  socialIcons: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '10px', 
-  },
-  socialLink: {
-    color: '#fff',
-    fontSize: '1.2rem', 
-    transition: 'color 0.3s ease',
-  },
-  bottomBar: {
-    marginTop: '10px',
-    paddingTop: '5px',
-    borderTop: '1px solid #4B5563',
-    fontSize: '0.7rem', 
-  },
 };
 
 export default Footer;

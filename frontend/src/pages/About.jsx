@@ -72,7 +72,7 @@ const About = () => {
              {/* Team Member 2 */}
             <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-300 flex flex-col items-center md:flex-row md:items-center">
               <img
-                src="https://via.placeholder.com/120?text=John+Smith"
+                src="https://i.postimg.cc/fSyxkTdh/CEO-Style-Profile-Picture-with-i-Foto-PFP-Maker.jpg'"
                 alt="John Smith, Co-founder & CTO"
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover mb-4 md:mb-0 md:mr-6 flex-shrink-0"
               />
