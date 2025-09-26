@@ -10,6 +10,7 @@ function Cart() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
+  const [orderId, setOrderId] = useState(null); // store created order
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ function Cart() {
       const updatedItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedItems);
       const newTotal = updatedItems.reduce(
-        (acc, item) => acc + item.price * item.quantity,
+        (acc, item) => acc + item.product?.price * item.quantity,
         0
       );
       setTotal(newTotal);
@@ -55,7 +56,7 @@ function Cart() {
       );
       setCartItems(updatedItems);
       const newTotal = updatedItems.reduce(
-        (acc, item) => acc + item.price * item.quantity,
+        (acc, item) => acc + item.product?.price * item.quantity,
         0
       );
       setTotal(newTotal);
@@ -65,68 +66,63 @@ function Cart() {
     }
   };
 
-  const handleCheckout = async () => {
+  // Step 1: Create the order (without payment)
+  const handleCreateOrder = async () => {
     if (!deliveryAddress.trim() || !phoneNumber.trim()) {
       alert("Please fill in all required fields");
       return;
     }
 
     try {
-      // Step 1: Create order on backend
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        alert("You must be logged in to place an order");
+        navigate("/login");
+        return;
+      }
+
       const orderData = {
         delivery_address: deliveryAddress,
         phone_number: phoneNumber,
         notes: notes,
-        items: cartItems.map((item) => ({
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        total_amount: total + 200, // include delivery fee
       };
 
-      const res = await api.post("/api/orders/create/", orderData);
+      const res = await api.post("/api/orders/create/", orderData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (res.status === 201) {
-        const { order_id, amount, email } = res.data; // backend returns Paystack info
+        setOrderId(res.data.order_id); // save created order ID
+        alert("Order created! Now proceed to payment.");
+      }
+    } catch (error) {
+      console.error("Order creation failed:", error);
+      alert("Failed to create order. Please try again.");
+    }
+  };
 
-        // Step 2: Initialize Paystack payment
-        const handler = window.PaystackPop.setup({
-          key: process.env.REACT_APP_PAYSTACK_KEY,
-          email: email,
-          amount: amount * 100, // Paystack expects kobo
-          ref: order_id,
-          onClose: function () {
-            alert("Payment window closed. Complete your payment to confirm order.");
-          },
-          callback: async function (response) {
-            // Step 3: Verify payment on backend
-            try {
-              const verifyRes = await api.post(`/api/payments/verify/`, {
-                reference: response.reference,
-                order_id: order_id,
-              });
+  // Step 2: Checkout / Pay for the created order
+  const handleCheckout = async () => {
+    if (!orderId) {
+      alert("No order created yet. Create order first!");
+      return;
+    }
 
-              if (verifyRes.data.status === "success") {
-                alert("Payment successful! Order confirmed.");
-                setCartItems([]);
-                setTotal(0);
-                navigate(`/order-confirmation/${order_id}`);
-              } else {
-                alert("Payment verification failed. Contact support.");
-              }
-            } catch (err) {
-              console.error("Payment verification error:", err);
-              alert("Payment verification failed. Try again.");
-            }
-          },
-        });
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await api.post(
+        `/api/orders/checkout/${orderId}/`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        handler.openIframe();
+      if (res.status === 200) {
+        const { authorization_url } = res.data;
+        window.location.href = authorization_url; // redirect to Paystack
       }
     } catch (error) {
       console.error("Checkout failed:", error);
-      alert("Failed to place order. Please try again.");
+      alert("Failed to proceed to payment. Please try again.");
     }
   };
 
@@ -143,7 +139,7 @@ function Cart() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-green-700 mb-8">Shopping Cart</h1>
 
-      {cartItems?.length === 0 ? (
+      {cartItems.length === 0 ? (
         <div className="text-center py-12">
           <p className="mt-4 text-xl text-gray-600">Your cart is empty</p>
           <button
@@ -163,10 +159,16 @@ function Cart() {
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex items-center justify-between border-b pb-4">
                     <div className="flex items-center space-x-4">
-                      {item.image && <img src={item.image} alt={item.product_name} className="w-16 h-16 object-cover rounded" />}
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.product_name}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
                       <div>
                         <h3 className="font-semibold">{item.product_name}</h3>
-                        <p className="text-gray-600">KSH {item.price} each</p>
+                        <p className="text-gray-600">KSH {item.product?.price} each</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
@@ -186,7 +188,7 @@ function Cart() {
                         </button>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">KSH {item.price * item.quantity}</p>
+                        <p className="font-semibold">KSH {item.product?.price * item.quantity}</p>
                         <button
                           onClick={() => handleRemoveItem(item.id)}
                           className="text-red-600 hover:text-red-800 text-sm"
@@ -229,55 +231,50 @@ function Cart() {
                 </button>
               ) : (
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address *</label>
-                    <textarea
-                      value={deliveryAddress}
-                      onChange={(e) => setDeliveryAddress(e.target.value)}
-                      rows="3"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Enter your delivery address"
-                      required
-                    />
-                  </div>
+                  <textarea
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Delivery Address *"
+                  />
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Phone Number *"
+                  />
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows="2"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Additional Notes"
+                  />
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="+254..."
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes (Optional)</label>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      rows="2"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Any special instructions..."
-                    />
-                  </div>
-
-                  <div className="space-y-2">
+                  {!orderId ? (
+                    <button
+                      onClick={handleCreateOrder}
+                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition"
+                    >
+                      Confirm Order
+                    </button>
+                  ) : (
                     <button
                       onClick={handleCheckout}
                       className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition"
                     >
-                      Pay & Place Order
+                      Pay Now
                     </button>
-                    <button
-                      onClick={() => setShowCheckout(false)}
-                      className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowCheckout(false)}
+                    className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
                 </div>
               )}
             </div>
@@ -289,3 +286,4 @@ function Cart() {
 }
 
 export default Cart;
+

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/authcontext";
+import { AuthContext } from "../context/AuthContext";
 import ProductCard from "../components/ProductCard";
 
 function MarketPlace() {
@@ -63,7 +63,7 @@ function MarketPlace() {
     try {
       await api.post("/api/cart/add/", { product_id: productId, quantity: 1 });
       alert("Item added to cart successfully!");
-      fetchCartItems(); // Refresh cart items
+      fetchCartItems(); 
     } catch (error) {
       console.error("Failed to add to cart:", error);
       alert("Failed to add item to cart. Please try again.");

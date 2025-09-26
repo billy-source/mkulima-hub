@@ -1,20 +1,20 @@
-from rest_framework import generics, viewsets, filters, permissions
+from rest_framework import generics, viewsets, filters
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from datetime import datetime, timedelta
+from django.conf import settings
+import requests, json, hmac, hashlib
+
 from .models import Farmer, Product, Order, OrderItem, Payment, Delivery, Review, Cart
 from .serializers import (
     UserSerializer, FarmerSerializer, ProductSerializer,
     OrderSerializer, PaymentSerializer, DeliverySerializer,
     ReviewSerializer, CartSerializer
 )
-import requests
-from django.conf import settings
-import json, hmac, hashlib
 
 User = get_user_model()
 
@@ -30,7 +30,6 @@ class RegisterView(generics.CreateAPIView):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_info(request):
-    """Fetch logged-in user details"""
     user = request.user
     return Response({
         "id": user.id,
@@ -46,9 +45,15 @@ def user_info(request):
 # ==========================
 
 class IsFarmer(BasePermission):
-    """Allow access only to users with a farmer profile."""
     def has_permission(self, request, view):
         return request.user.is_authenticated and hasattr(request.user, "farmer")
+
+# ==========================
+# Helper Functions
+# ==========================
+
+def is_buyer(user):
+    return getattr(user, "role", None) == "buyer"
 
 # ==========================
 # CRUD ViewSets
@@ -59,11 +64,10 @@ class FarmerViewSet(viewsets.ModelViewSet):
     serializer_class = FarmerSerializer
     permission_classes = [IsAuthenticated]
 
-
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]  # Must be a list
+    permission_classes = [AllowAny]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "description", "category"]
     ordering_fields = ["name", "price", "created_at"]
@@ -91,6 +95,9 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You can only delete your own products")
         instance.delete()
 
+# ==========================
+# Orders (CRUD only)
+# ==========================
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -103,79 +110,16 @@ class OrderViewSet(viewsets.ModelViewSet):
             return Order.objects.filter(items__product__farmer=user.farmer).distinct()
         return Order.objects.filter(user=user)
 
-
-class PaymentViewSet(viewsets.ModelViewSet):
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class DeliveryViewSet(viewsets.ModelViewSet):
-    queryset = Delivery.objects.all()
-    serializer_class = DeliverySerializer
-    permission_classes = [IsAuthenticated]
-
-
-class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
-
 # ==========================
-# Cart Endpoints
-# ==========================
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def cart_items(request):
-    items = Cart.objects.filter(user=request.user)
-    serializer = CartSerializer(items, many=True)
-    total = sum(item.product.price * item.quantity for item in items)
-    return Response({"items": serializer.data, "total": total})
-
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def add_to_cart(request):
-    product_id = request.data.get("product_id")
-    quantity = int(request.data.get("quantity", 1))
-    try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
-        return Response({"error": "Product not found"}, status=404)
-
-    cart_item, created = Cart.objects.get_or_create(
-        user=request.user, product=product, defaults={"quantity": quantity}
-    )
-    if not created:
-        cart_item.quantity = quantity
-        cart_item.save()
-
-    items = Cart.objects.filter(user=request.user)
-    serializer = CartSerializer(items, many=True)
-    total = sum(item.product.price * item.quantity for item in items)
-    return Response({"items": serializer.data, "total": total})
-
-@api_view(["DELETE"])
-@permission_classes([IsAuthenticated])
-def remove_from_cart(request, item_id):
-    try:
-        item = Cart.objects.get(id=item_id, user=request.user)
-        item.delete()
-    except Cart.DoesNotExist:
-        return Response({"error": "Item not found"}, status=404)
-
-    items = Cart.objects.filter(user=request.user)
-    serializer = CartSerializer(items, many=True)
-    total = sum(item.product.price * item.quantity for item in items)
-    return Response({"items": serializer.data, "total": total})
-
-# ==========================
-# Paystack Payment
+# Checkout / Payment
 # ==========================
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_order_paystack(request):
+    if not is_buyer(request.user):
+        return Response({"error": "Only buyers can create orders"}, status=403)
+
     user = request.user
     items = Cart.objects.filter(user=user)
     if not items.exists():
@@ -242,6 +186,86 @@ def create_order_paystack(request):
         "payment_reference": paystack_data["data"]["reference"]
     }, status=201)
 
+# ==========================
+# Cart (Buyers Only)
+# ==========================
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def cart_items(request):
+    if not is_buyer(request.user):
+        return Response({"error": "Only buyers can access the cart"}, status=403)
+
+    items = Cart.objects.filter(user=request.user)
+    serializer = CartSerializer(items, many=True)
+    total = sum(item.product.price * item.quantity for item in items)
+    return Response({"items": serializer.data, "total": total})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_to_cart(request):
+    if not is_buyer(request.user):
+        return Response({"error": "Only buyers can add items to the cart"}, status=403)
+
+    product_id = request.data.get("product_id")
+    quantity = int(request.data.get("quantity", 1))
+    try:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
+
+    cart_item, created = Cart.objects.get_or_create(
+        user=request.user, product=product, defaults={"quantity": quantity}
+    )
+    if not created:
+        cart_item.quantity = quantity
+        cart_item.save()
+
+    items = Cart.objects.filter(user=request.user)
+    serializer = CartSerializer(items, many=True)
+    total = sum(item.product.price * item.quantity for item in items)
+    return Response({"items": serializer.data, "total": total})
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def remove_from_cart(request, item_id):
+    if not is_buyer(request.user):
+        return Response({"error": "Only buyers can remove items from the cart"}, status=403)
+
+    try:
+        item = Cart.objects.get(id=item_id, user=request.user)
+        item.delete()
+    except Cart.DoesNotExist:
+        return Response({"error": "Item not found"}, status=404)
+
+    items = Cart.objects.filter(user=request.user)
+    serializer = CartSerializer(items, many=True)
+    total = sum(item.product.price * item.quantity for item in items)
+    return Response({"items": serializer.data, "total": total})
+
+# ==========================
+# Payments, Delivery, Reviews
+# ==========================
+
+class PaymentViewSet(viewsets.ModelViewSet):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+
+class DeliveryViewSet(viewsets.ModelViewSet):
+    queryset = Delivery.objects.all()
+    serializer_class = DeliverySerializer
+    permission_classes = [IsAuthenticated]
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+# ==========================
+# Paystack Webhook
+# ==========================
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def paystack_webhook(request):
@@ -268,7 +292,7 @@ def paystack_webhook(request):
     return Response(status=200)
 
 # ==========================
-# Dashboard Endpoints
+# Dashboard / Analytics
 # ==========================
 
 @api_view(["GET"])
@@ -336,3 +360,35 @@ def buyer_dashboard_summary(request):
         "orders": Order.objects.filter(user=user).count(),
         "spent": Order.objects.filter(user=user).aggregate(total=Sum("total_amount"))["total"] or 0
     })
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def test_payout(request):
+    recipient_code = request.data.get("recipient_code")
+    amount = request.data.get("amount")  # amount in kobo
+    reason = request.data.get("reason", "Test payout")
+
+    if not recipient_code or not amount:
+        return Response({"error": "recipient_code and amount are required"}, status=400)
+
+    url = "https://api.paystack.co/transfer"
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "source": "balance",
+        "amount": int(amount),
+        "recipient": recipient_code,
+        "reason": reason
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        data = response.json()
+    except Exception as e:
+        return Response({"error": "Request failed", "details": str(e)}, status=500)
+
+    if data.get("status"):
+        return Response({"message": "Payout initiated", "data": data})
+    else:
+        return Response({"error": "Payout failed", "details": data}, status=400)

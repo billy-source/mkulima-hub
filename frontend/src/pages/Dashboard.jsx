@@ -51,7 +51,7 @@ function Dashboard() {
     const fetchData = async () => {
       try {
         const endpoint =
-          user.role === "farmer" ? "/dashboard/farmer/" : "/dashboard/buyer/";
+          user.role === "farmer" ? "/api/dashboard/farmer/" : "/api/dashboard/buyer/";
         const res = await api.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });

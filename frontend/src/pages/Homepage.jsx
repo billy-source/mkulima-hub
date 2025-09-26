@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import farmersVideo from "../assets/farmers.mp4";
 
-// Styles for the video background layout
+
 const heroContainerStyle = {
   position: "relative",
   width: "100%",
-  height: "70vh", // Sets a fixed height for the hero section
+  height: "70vh", 
   display: "flex",
   flexDirection: "column",
   justifyContent: "center",
   alignItems: "center",
   textAlign: "center",
   color: "white",
-  overflow: "hidden", // Ensures the video doesn't overflow
+  overflow: "hidden", 
 };
 
 const videoStyle = {
@@ -22,15 +22,15 @@ const videoStyle = {
   left: 0,
   width: "100%",
   height: "100%",
-  objectFit: "cover", // Ensures the video covers the entire container
-  zIndex: -1, // Pushes the video behind the text content
+  objectFit: "cover", 
+  zIndex: -1, 
 };
 
 const textOverlayStyle = {
-  position: "relative", // Ensures the text is on top of the video
+  position: "relative", 
   zIndex: 1,
   padding: "20px",
-  backgroundColor: "rgba(0, 0, 0, 0.4)", // A semi-transparent overlay for readability
+  backgroundColor: "rgba(0, 0, 0, 0.4)", 
   borderRadius: "10px",
   maxWidth: "800px",
 };

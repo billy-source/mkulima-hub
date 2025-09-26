@@ -70,7 +70,7 @@ const Navbar = () => {
             {/* Show login if NOT logged in */}
             {!isLoggedIn && (
               <Link to="/login" className="py-2 px-4 bg-green-800 hover:bg-green-900 rounded-md transition-colors w-full text-center mt-2 md:mt-0">
-                Login / Register
+                Login 
               </Link>
             )}
           </div>

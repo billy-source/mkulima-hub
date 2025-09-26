@@ -42,11 +42,7 @@ const FarmerForm = ({ onProductAdded }) => {
     });
 
     try {
-      const response = await api.post('/api/products/', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await api.post('/products/', fd);
       
       setMessage('Product added successfully!');
       setFormData({
