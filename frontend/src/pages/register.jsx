@@ -24,17 +24,11 @@ function Register() {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/user/register/", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username,
-          password,
-          email,
-          phone,
-          role
-        }),
-      });
+      const res = await fetch("http://127.0.0.1:8000/api/user/register/", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ username, password, email, phone, role }),
+});
 
       if (!res.ok) {
         const data = await res.json();

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -10,7 +11,6 @@ function Cart() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [notes, setNotes] = useState("");
   const [showCheckout, setShowCheckout] = useState(false);
-  const [orderId, setOrderId] = useState(null); // store created order
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,93 +37,47 @@ function Cart() {
       const updatedItems = cartItems.filter((item) => item.id !== itemId);
       setCartItems(updatedItems);
       const newTotal = updatedItems.reduce(
-        (acc, item) => acc + item.product?.price * item.quantity,
+        (acc, item) => acc + item.product_price * item.quantity,
         0
       );
       setTotal(newTotal);
     } catch (error) {
       console.error("Failed to remove item:", error);
-      alert("Failed to remove item. Please try again.");
     }
   };
 
-  const handleQuantityChange = async (itemId, newQuantity) => {
+  const handleQuantityChange = async (cartItemId, newQuantity) => {
     if (newQuantity < 1) return;
     try {
-      await api.post(`/api/cart/add/`, { product_id: itemId, quantity: newQuantity });
-      const updatedItems = cartItems.map((item) =>
-        item.product_id === itemId ? { ...item, quantity: newQuantity } : item
+      await axios.put(`http://127.0.0.1:8000/cart/update/${cartItemId}/`, {
+        quantity: newQuantity,
+      });
+
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === cartItemId ? { ...item, quantity: newQuantity } : item
+        )
       );
-      setCartItems(updatedItems);
-      const newTotal = updatedItems.reduce(
-        (acc, item) => acc + item.product?.price * item.quantity,
-        0
-      );
-      setTotal(newTotal);
     } catch (error) {
       console.error("Failed to update quantity:", error);
-      alert("Failed to update quantity. Please try again.");
     }
   };
 
-  // Step 1: Create the order (without payment)
-  const handleCreateOrder = async () => {
+  const handleProceedToPayment = () => {
     if (!deliveryAddress.trim() || !phoneNumber.trim()) {
       alert("Please fill in all required fields");
       return;
     }
 
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        alert("You must be logged in to place an order");
-        navigate("/login");
-        return;
-      }
-
-      const orderData = {
-        delivery_address: deliveryAddress,
-        phone_number: phoneNumber,
-        notes: notes,
-      };
-
-      const res = await api.post("/api/orders/create/", orderData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.status === 201) {
-        setOrderId(res.data.order_id); // save created order ID
-        alert("Order created! Now proceed to payment.");
-      }
-    } catch (error) {
-      console.error("Order creation failed:", error);
-      alert("Failed to create order. Please try again.");
-    }
-  };
-
-  // Step 2: Checkout / Pay for the created order
-  const handleCheckout = async () => {
-    if (!orderId) {
-      alert("No order created yet. Create order first!");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("access_token");
-      const res = await api.post(
-        `/api/orders/checkout/${orderId}/`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (res.status === 200) {
-        const { authorization_url } = res.data;
-        window.location.href = authorization_url; // redirect to Paystack
-      }
-    } catch (error) {
-      console.error("Checkout failed:", error);
-      alert("Failed to proceed to payment. Please try again.");
-    }
+    navigate("/makepayment", {
+      state: {
+        cartItems,
+        total: total + 200, // Including delivery fee
+        deliveryAddress,
+        phoneNumber,
+        notes,
+      },
+    });
   };
 
   if (loading) {
@@ -168,27 +122,31 @@ function Cart() {
                       )}
                       <div>
                         <h3 className="font-semibold">{item.product_name}</h3>
-                        <p className="text-gray-600">KSH {item.product?.price} each</p>
+                        <p className="text-gray-600">KSH {item.product_price} each</p>
                       </div>
                     </div>
+
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleQuantityChange(item.product_id, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                           className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full hover:bg-gray-300"
                         >
                           -
                         </button>
                         <span className="w-12 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => handleQuantityChange(item.product_id, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                           className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full hover:bg-gray-300"
                         >
                           +
                         </button>
                       </div>
+
                       <div className="text-right">
-                        <p className="font-semibold">KSH {item.product?.price * item.quantity}</p>
+                        <p className="font-semibold">
+                          KSH {item.product_price ? item.product_price * item.quantity : 0}
+                        </p>
                         <button
                           onClick={() => handleRemoveItem(item.id)}
                           className="text-red-600 hover:text-red-800 text-sm"
@@ -253,21 +211,12 @@ function Cart() {
                     placeholder="Additional Notes"
                   />
 
-                  {!orderId ? (
-                    <button
-                      onClick={handleCreateOrder}
-                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition"
-                    >
-                      Confirm Order
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleCheckout}
-                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition"
-                    >
-                      Pay Now
-                    </button>
-                  )}
+                  <button
+                    onClick={handleProceedToPayment}
+                    className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition"
+                  >
+                    Proceed to Payment
+                  </button>
 
                   <button
                     onClick={() => setShowCheckout(false)}
@@ -286,4 +235,3 @@ function Cart() {
 }
 
 export default Cart;
-
